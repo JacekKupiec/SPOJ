@@ -65,13 +65,11 @@ fn main() {
             },
             ArithmeticOperation::Multiply => {
                 right.insert_str(0, "*");
-                let separator_shorter = repeat('-')
-                    .take(max(lhs.len(), right.len()))
-                    .collect::<String>();
 
                 let (product, product_steps) = multiply(&lhs, &rhs);
                 let line_length = product_steps.iter()
-                    .map(|s| s.len())
+                    .enumerate()
+                    .map(|(idx, s)| s.len() + idx)
                     .chain([lhs.len(), right.len(), product.len()])
                     .max()
                     .unwrap();
@@ -80,16 +78,30 @@ fn main() {
                 println!("{:>width$}", right, width = line_length);
 
                 if product_steps.len() > 1 {
+                    let separator_shorter = repeat('-')
+                        .take(max(right.len(), product_steps[0].len()))
+                        .collect::<String>();
                     println!("{:>width$}", separator_shorter, width = line_length);
 
                     for (idx, product_step) in product_steps.iter().enumerate() {
                         print_number(&product_step, line_length - idx);
                     }
+
+                    let len_last_step = product_steps.last().unwrap().len() + product_steps.len() - 1;
+                    let separator_longer = repeat('-')
+                        .take(
+                            max(len_last_step, product.len()))
+                        .collect::<String>();
+                    println!("{:>width$}", separator_longer, width = line_length);
+                }
+                else {
+                    let separator_longer = repeat('-')
+                        .take(max(right.len(), product.len()))
+                        .collect::<String>();
+
+                    println!("{:>width$}", separator_longer, width = line_length);
                 }
 
-                let separator_longer = repeat('-').take(line_length).collect::<String>();
-
-                println!("{:}", separator_longer);
                 print_number(&product, line_length);
                 print!("\n");
             },
