@@ -40,24 +40,26 @@ fn main() {
             ArithmeticOperation::Add => {
                 let result = add(&lhs, &rhs);
                 let line_length = *[lhs.len(), rhs.len() + 1, result.len()].iter().max().unwrap();
-                let separator = repeat('-').take(line_length).collect::<String>();
+                let separator_length = max(rhs.len() + 1, result.len());
+                let separator = repeat('-').take(separator_length).collect::<String>();
                 right.insert_str(0, "+");
 
                 println!("{:>width$}", left, width = line_length);
                 println!("{:>width$}", right, width = line_length);
-                println!("{}", separator);
+                println!("{:>width$}", separator, width = line_length);
                 print_number(&result, line_length);
                 print!("\n");
             },
             ArithmeticOperation::Subtract => {
                 let result = subtract(&lhs, &rhs);
                 let line_length = *[lhs.len(), rhs.len() + 1, result.len()].iter().max().unwrap();
-                let separator = repeat('-').take(line_length).collect::<String>();
+                let separator_length = max(rhs.len() + 1, result.len());
+                let separator = repeat('-').take(separator_length).collect::<String>();
                 right.insert_str(0, "-");
 
                 println!("{:>width$}", left, width = line_length);
                 println!("{:>width$}", right, width = line_length);
-                println!("{}", separator);
+                println!("{:>width$}", separator, width = line_length);
                 print_number(&result, line_length);
                 print!("\n");
             },
@@ -80,8 +82,8 @@ fn main() {
                 if product_steps.len() > 1 {
                     println!("{:>width$}", separator_shorter, width = line_length);
 
-                    for product_step in product_steps {
-                        print_number(&product_step, line_length);
+                    for (idx, product_step) in product_steps.iter().enumerate() {
+                        print_number(&product_step, line_length - idx);
                     }
                 }
 
@@ -106,7 +108,7 @@ fn print_number(number: &Vec<i32>, line_length: usize) {
     let num_spaces = line_length - number.len();
     let offset = '0' as i32;
     let chars_to_print = repeat(' ').take(num_spaces)
-        .chain(number.iter().rev().map(|x| if *x == -1 { ' ' } else {(x + offset) as u8 as char }))
+        .chain(number.iter().rev().map(|x| (x + offset) as u8 as char))
         .collect::<String>();
 
     println!("{:>width$}", chars_to_print, width = line_length);
@@ -171,6 +173,10 @@ fn subtract(lhs: &Vec<i32>, rhs : &Vec<i32>) -> Vec<i32> {
         }
     }
 
+    if difference.is_empty() {
+        difference.push(0);
+    }
+
     // while let Some(_) = difference.pop_if(|x| *x == 0) { }
 
     difference
@@ -208,11 +214,11 @@ fn multiply(lhs: &Vec<i32>, rhs : &Vec<i32>) -> (Vec<i32>, Vec<Vec<i32>>) {
     let mut product = vec![0; lhs.len() + rhs.len()];
 
     for (power_of_ten_multiplier, multiplier) in rhs.iter().enumerate() {
-        let mut partial_result = multiply_by(lhs, multiplier, power_of_ten_multiplier);
+        let partial_result = multiply_by(lhs, multiplier, power_of_ten_multiplier);
         add_in_place(&mut product, &partial_result);
 
-        partial_result[0..power_of_ten_multiplier].fill(-1);
-        product_layout.push(partial_result);
+        let partial_result_print = Vec::from(&partial_result[power_of_ten_multiplier..]);
+        product_layout.push(partial_result_print);
     }
 
     while let Some(e) = product.last() {
