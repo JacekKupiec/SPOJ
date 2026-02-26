@@ -1,12 +1,23 @@
 use std::io::Read;
 
 fn main() {
-    let mut input = std::io::stdin().lock();
+    let stdin = std::io::stdin();
+    let mut input = stdin.lock();
     let mut buffer = String::with_capacity(1024);
 
-    _ = input.read_to_string(&mut buffer).unwrap();
+    input.read_to_string(&mut buffer).unwrap();
 
-    let p = buffer.trim_end().parse::<u32>().unwrap();
+    let mut p = buffer.trim_end().parse::<u32>().unwrap();
+    let mut counter = 0;
 
-    println!("42");
+    while p > 1 {
+        p = if p % 2 == 1 {
+            (p << 1) ^ p ^ 1
+        } else {
+            p >> 1
+        };
+        counter += 1;
+    }
+
+    print!("{}", counter);
 }
